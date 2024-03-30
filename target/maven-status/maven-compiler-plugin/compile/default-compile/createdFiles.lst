@@ -1,0 +1,5 @@
+org/example/sudoku/model/SudokuGrid.class
+org/example/sudoku/SudokuMicroservice.class
+org/example/sudoku/SudokuMicroservice$ValidationResult.class
+org/example/sudoku/service/SudokuValidator.class
+org/example/sudoku/service/SudokuGenerator.class

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Micro Frontend</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            display: block;
+            margin: 0 auto;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #sudokuGrid {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+
+        td {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ccc;
+            font-size: 20px;
+        }
+
+        td:nth-child(3n) {
+            border-right: 2px solid #000;
+        }
+
+        td:nth-child(3) {
+            border-left: 2px solid #000;
+        }
+
+        tr:nth-child(3n) td {
+            border-bottom: 2px solid #000;
+        }
+
+        tr:nth-child(3) td {
+            border-top: 2px solid #000;
+        }
+
+        td input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            font-size: inherit;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<h1>Sudoku Micro Frontend</h1>
+<button id="generateButton">Generate Sudoku Grid</button>
+<div id="sudokuGrid"></div>
+
+<script>
+    document.getElementById('generateButton').addEventListener('click', function() {
+        generateSudokuGrid();
+    });
+
+    function generateSudokuGrid() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://localhost:8080/generate', true);
+        xhr.setRequestHeader('Content-Type', 'text/html;charset=utf-8');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    displaySudokuGrid(response.grid);
+                } else {
+                    alert('Failed to generate Sudoku grid');
+                }
+            }
+        };
+        xhr.send();
+    }
+
+    function displaySudokuGrid(grid) {
+        var sudokuGridDiv = document.getElementById('sudokuGrid');
+        sudokuGridDiv.innerHTML = '';
+
+        var table = document.createElement('table');
+        for (var i = 0; i < grid.length; i++) {
+            var row = document.createElement('tr');
+            for (var j = 0; j < grid[i].length; j++) {
+                var cell = document.createElement('td');
+                cell.textContent = grid[i][j];
+                cell.addEventListener('input', function(event) {
+                    validateInput(event.target);
+                });
+                row.appendChild(cell);
+            }
+            table.appendChild(row);
+        }
+        sudokuGridDiv.appendChild(table);
+    }
+
+    function validateInput(input) {
+        var row = input.parentElement.rowIndex;
+        var col = input.cellIndex;
+        var num = parseInt(input.textContent);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost:8080/validate?row=' + row + '&col=' + col + '&num=' + num, true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (!response.isValid) {
+                        alert('Invalid number entered!');
+                        input.textContent = '';
+                    }
+                } else {
+                    alert('Failed to validate input');
+                }
+            }
+        };
+        xhr.send();
+    }
+</script>
+</body>
+</html>
